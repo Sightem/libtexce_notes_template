@@ -1,0 +1,28 @@
+name: Bump libtexce submodule
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * 1'
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Bump submodule
+        run: |
+          git submodule update --remote external/libtexce
+          git status --short
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: bump libtexce submodule"
+          branch: "ci/bump-libtexce-submodule"
+          title: "chore: bump libtexce submodule"
+          body: "Automated submodule bump for external/libtexce"

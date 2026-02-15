@@ -1,0 +1,84 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+env:
+  CEDEV: ${{ github.workspace }}/CEdev
+  CEDEV_BIN: ${{ github.workspace }}/CEdev/bin
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install host deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3
+
+      - name: Sync submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive --depth 1
+
+      - name: Download CE Toolchain
+        run: |
+          curl -L -o CEdev-Linux.tar.gz https://github.com/CE-Programming/toolchain/releases/download/v14.2/CEdev-Linux.tar.gz
+          tar -xzf CEdev-Linux.tar.gz
+          echo "${{ env.CEDEV_BIN }}" >> $GITHUB_PATH
+
+      - name: Build pack AppVars
+        run: python3 tools/build_pack.py
+
+      - name: Build viewer program
+        run: |
+          cmake -S viewer -B build/ce -G Ninja -DCEDEV_ROOT="${{ env.CEDEV }}"
+          cmake --build build/ce
+
+      - name: Collect bundle inputs
+        run: |
+          mkdir -p bundle_inputs artifact
+          cp dist/8xv/*.8xv bundle_inputs/
+          if compgen -G "assets/*.8xv" > /dev/null; then
+            cp assets/*.8xv bundle_inputs/
+          elif compgen -G "external/libtexce/assets/*.8xv" > /dev/null; then
+            cp external/libtexce/assets/*.8xv bundle_inputs/
+          else
+            echo "::error::No font AppVars found (expected assets/*.8xv or external/libtexce/assets/*.8xv)"
+            exit 1
+          fi
+          find build/ce -name '*.8xp' -exec cp {} bundle_inputs/ \;
+
+      - name: Build single-file group bundle
+        run: |
+          shopt -s nullglob
+          files=(bundle_inputs/*.8xv bundle_inputs/*.8xp)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No .8xp/.8xv files found to bundle"
+            exit 1
+          fi
+          cmd=(convbin --oformat 8xg-auto-extract --output artifact/NOTES_BUNDLE.8xg)
+          for f in "${files[@]}"; do
+            cmd+=(--iformat 8x --input "$f")
+          done
+          "${cmd[@]}"
+
+      - name: Upload artifact bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: notes-template-artifacts
+          path: artifact/NOTES_BUNDLE.8xg
+
+      - name: Publish to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifact/NOTES_BUNDLE.8xg

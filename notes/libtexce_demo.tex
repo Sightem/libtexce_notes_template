@@ -1,0 +1,42 @@
+Calculus Reference
+
+1. Derivative Definition
+$$ f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h} $$
+
+2. Fundamental Theorem
+$$ \int_{a}^{b} f(x) \, dx = F(b) - F(a) $$
+
+3. Taylor Series (at x=a)
+$$ f(x) \approx f(a) + f'(a)(x-a) + \frac{f''(a)}{2}(x-a)^2 $$
+
+4. Maclaurin Series
+$$ e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} = 1 + x + \frac{x^2}{2} + ... $$
+$$ \sin x = \sum_{n=0}^{\infty} \frac{(-1)^n x^{2n+1}}{(2n+1)!} $$
+
+5. Quadratic Formula
+$$ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} $$
+
+6. Normal Distribution
+$$ P(x) = \frac{1}{\sigma \sqrt{2\pi}} e^{ -\frac{1}{2} \left( \frac{x-\mu}{\sigma} \right)^2 } $$
+
+7. Piecewise Function
+$$ f(x) = \left\{ \frac{x^2 + 1}{x - 1} \right\} $$
+
+8. Matrices
+Identity matrix:
+$$ I = \begin{pmatrix}1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1\end{pmatrix} $$
+
+Rotation matrix:
+$$ R = \begin{bmatrix}\cos\theta & -\sin\theta & 0 \\ \sin\theta & \cos\theta & 0 \\ 0 & 0 & 1\end{bmatrix} $$
+
+System of equations:
+$$ \begin{Bmatrix}x + y = 5 \\ 2x - y = 1 \\ x + 2y = 7\end{Bmatrix} $$
+
+Determinant:
+$$ \begin{vmatrix}a & b & c \\ d & e & f \\ g & h & i\end{vmatrix} $$
+
+Augmented matrix:
+$$ \left[ \begin{array}{ccc|c} 1 & -4 & -1 & b_1 \\ 0 & -1 & 0 & 2b_1 + b_3 \\ 0 & 4 & 2 & 4b_1 + b_2 \end{array} \right] $$
+
+9. Matrix Product with Underbrace
+$$ A = \underbrace{\begin{bmatrix} 0 & 1 & 0 \\ 1 & 0 & 0 \\ 0 & 0 & 1 \end{bmatrix}}_{\text{Inv Swap}} \times \underbrace{\begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ -5 & 0 & 1 \end{bmatrix}}_{\text{Inv Add}} \times \underbrace{\begin{bmatrix} 1 & 0 & 0 \\ 0 & 4 & 0 \\ 0 & 0 & 1 \end{bmatrix}}_{\text{Inv Scale}} $$
