@@ -14,6 +14,8 @@ if(NOT EXISTS "${CEDEV_TOOLCHAIN}")
   message(FATAL_ERROR "Missing external/libtexce submodule. Run: git submodule update --init --recursive")
 endif()
 
+option(CEDEV_DEBUG_CONSOLE "Enable emulator debug console" OFF)
+
 include(${CEDEV_TOOLCHAIN})
 
 set(TEX_CORE_SOURCES
@@ -44,8 +46,7 @@ cedev_add_program(
     ${LIBTEXCE_ROOT}/src/tex
     ${LIBTEXCE_ROOT}/include
   LIBLOAD
-    graphx keypadc fileioc fontlibc
+    graphx keypadc fileioc
   COMPILE_OPTIONS
-    -DTEX_USE_FONTLIB
     -DTEX_DIRECT_RENDER
 )

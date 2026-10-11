@@ -47,14 +47,7 @@ jobs:
         run: |
           mkdir -p bundle_inputs artifact
           cp dist/8xv/*.8xv bundle_inputs/
-          if compgen -G "assets/*.8xv" > /dev/null; then
-            cp assets/*.8xv bundle_inputs/
-          elif compgen -G "external/libtexce/assets/*.8xv" > /dev/null; then
-            cp external/libtexce/assets/*.8xv bundle_inputs/
-          else
-            echo "::error::No font AppVars found (expected assets/*.8xv or external/libtexce/assets/*.8xv)"
-            exit 1
-          fi
+          cp external/libtexce/assets/TeXFonts.8xv external/libtexce/assets/TeXScrpt.8xv bundle_inputs/
           find build/ce -name '*.8xp' -exec cp {} bundle_inputs/ \;
 
       - name: Build single-file group bundle

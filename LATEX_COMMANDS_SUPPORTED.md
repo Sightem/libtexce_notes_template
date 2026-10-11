@@ -70,10 +70,12 @@
 - \\Delta
 - \\Gamma
 - \\Lambda
+- \\Leftrightarrow
 - \\Omega
 - \\Phi
 - \\Pi
 - \\Psi
+- \\Rightarrow
 - \\Sigma
 - \\Theta
 - \\Xi
@@ -82,6 +84,7 @@
 - \\approx
 - \\ast
 - \\beta
+- \\bot
 - \\cap
 - \\cdot
 - \\chi
@@ -103,12 +106,15 @@
 - \\geq
 - \\gets
 - \\hbar
+- \\iff
+- \\implies
 - \\in
 - \\infty
 - \\int
 - \\iota
 - \\kappa
 - \\lambda
+- \\land
 - \\langle
 - \\lbrace
 - \\lceil
@@ -116,10 +122,13 @@
 - \\leftarrow
 - \\leq
 - \\lfloor
+- \\lnot
+- \\lor
 - \\mp
 - \\mu
 - \\nabla
 - \\ne
+- \\neg
 - \\neq
 - \\notin
 - \\nu
@@ -152,7 +161,10 @@
 - \\theta
 - \\times
 - \\to
+- \\top
 - \\upsilon
+- \\vee
+- \\wedge
 - \\xi
 - \\zeta
 

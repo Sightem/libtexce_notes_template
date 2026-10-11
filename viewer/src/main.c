@@ -1,6 +1,5 @@
 #include "ntx_pack.h"
 
-#include <fontlibc.h>
 #include <graphx.h>
 #include <keypadc.h>
 #include <stdlib.h>
@@ -9,10 +8,11 @@
 #include <string.h>
 #include <tice.h>
 #include <tex/tex.h>
-#include <tex_renderer.h>
 
 #define COL_BG 255
 #define COL_FG 0
+#define COL_AA_LIGHT 254
+#define COL_AA_DARK 247
 #define UI_COL_BG 248
 #define UI_COL_PANEL 249
 #define UI_COL_HEADER 250
@@ -58,31 +58,25 @@ static void print_limited(const char* text, int max_chars)
 	gfx_PrintString(buf);
 }
 
-static bool require_fontpacks(fontlib_font_t** out_main, fontlib_font_t** out_script)
+static bool require_fontpacks(TeX_Font* out_main, TeX_Font* out_script)
 {
-	fontlib_font_t* font_main = fontlib_GetFontByIndex("TeXFonts", 0);
-	fontlib_font_t* font_script = fontlib_GetFontByIndex("TeXScrpt", 0);
-	if (font_main && font_script)
-	{
-		if (out_main)
-			*out_main = font_main;
-		if (out_script)
-			*out_script = font_script;
+	const bool main_loaded = tex_font_open(out_main, "TeXFonts");
+	const bool script_loaded = tex_font_open(out_script, "TeXScrpt");
+	if (main_loaded && script_loaded)
 		return true;
-	}
 
 	gfx_FillScreen(COL_BG);
 	gfx_SetTextFGColor(COL_FG);
 	gfx_SetTextXY(4, 10);
-	gfx_PrintString("Missing required fonts");
+	gfx_PrintString("Missing or invalid fonts");
 	gfx_SetTextXY(4, 24);
-	if (!font_main)
+	if (!main_loaded)
 		gfx_PrintString("- TeXFonts.8xv");
 	gfx_SetTextXY(4, 34);
-	if (!font_script)
+	if (!script_loaded)
 		gfx_PrintString("- TeXScrpt.8xv");
 	gfx_SetTextXY(4, 54);
-	gfx_PrintString("Copy from assets/");
+	gfx_PrintString("Update NOTES_BUNDLE.8xg");
 	gfx_SetTextXY(4, 68);
 	gfx_PrintString("Press CLEAR");
 	gfx_SwapDraw();
@@ -237,7 +231,8 @@ static void wait_for_nav_key_release(void)
 	}
 }
 
-static void view_chunk_tex(const NtxNoteEntry* note, uint16_t chunk_index, TeX_Renderer* renderer)
+static void view_chunk_tex(const NtxNoteEntry* note, uint16_t chunk_index, TeX_Renderer* renderer,
+                           const TeX_Config* cfg)
 {
 	char err[64] = { 0 };
 	char* text = NULL;
@@ -281,21 +276,13 @@ static void view_chunk_tex(const NtxNoteEntry* note, uint16_t chunk_index, TeX_R
 		return;
 	}
 
-	TeX_Config cfg = {
-		.color_fg = COL_FG,
-		.color_bg = COL_BG,
-		.font_pack = "TeXFonts",
-		.error_callback = NULL,
-		.error_userdata = NULL,
-	};
 	const int margin = 4;
 	const int header_h = 12;
 	const int footer_h = 10;
 	const int content_width = GFX_LCD_WIDTH - (margin * 2);
 	const int viewport_h = GFX_LCD_HEIGHT - header_h - footer_h;
 
-	TeX_Layout* layout = tex_format(text, content_width, &cfg);
-	tex_renderer_invalidate(renderer);
+	TeX_Layout* layout = tex_format(text, content_width, cfg);
 
 	int scroll_y = 0;
 	int total_h = layout ? tex_get_total_height(layout) : 0;
@@ -379,16 +366,20 @@ int main(void)
 	setup_menu_palette();
 	gfx_SetTextFGColor(COL_FG);
 	gfx_SetTextBGColor(COL_BG);
-	fontlib_SetTransparency(true);
+	gfx_SetTransparentColor(COL_BG);
 
-	fontlib_font_t* font_main = NULL;
-	fontlib_font_t* font_script = NULL;
+	TeX_Font font_main = { 0 };
+	TeX_Font font_script = { 0 };
 	if (!require_fontpacks(&font_main, &font_script))
 	{
 		gfx_End();
 		return 1;
 	}
-	tex_draw_set_fonts(font_main, font_script);
+	const TeX_Config cfg = {
+		.palette = { COL_BG, COL_AA_LIGHT, COL_AA_DARK, COL_FG },
+		.font_main = font_main,
+		.font_script = font_script,
+	};
 	TeX_Renderer* renderer = tex_renderer_create_sized(RENDERER_SLAB_SIZE);
 	if (!renderer)
 	{
@@ -470,7 +461,7 @@ int main(void)
 		{
 			const ChunkMenuItem* mi = &items[sel];
 			const NtxNoteEntry* note = &idx.entries[mi->note_index];
-			view_chunk_tex(note, mi->chunk_index, renderer);
+			view_chunk_tex(note, mi->chunk_index, renderer, &cfg);
 			wait_for_nav_key_release();
 
 			prev_up = false;
